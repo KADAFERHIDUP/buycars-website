@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Database\Seeds;
+
+use CodeIgniter\Database\Seeder;
+
+/**
+ * Katalog awal (data contoh). Harga dan spesifikasi hanya untuk demo showroom,
+ * silakan ubah lewat panel admin.
+ */
+class CarSeeder extends Seeder
+{
+    public function run()
+    {
+        if ($this->db->table('cars')->countAllResults() > 0) {
+            return;
+        }
+
+        $now  = date('Y-m-d H:i:s');
+        $cars = [
+            ['slug' => 'porsche-911-cabriolet', 'brand' => 'Porsche', 'model' => '911', 'variant' => 'Carrera Cabriolet', 'year' => 2022, 'price' => 4350000000, 'condition' => 'bekas', 'mileage_km' => 8500, 'body_type' => 'convertible', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '3.0L twin-turbo flat-6', 'power_hp' => 385, 'seats' => 4, 'color' => 'Guards Red', 'is_featured' => 1, 'description' => 'Atap kain elektrik yang terbuka dalam 12 detik, mesin boxer twin-turbo di belakang, dan suara knalpot yang khas. Servis rutin di dealer resmi.', 'image' => 'images/cars/porsche-911-cabriolet.webp', 'status' => 'tersedia'],
+            ['slug' => 'porsche-panamera-4', 'brand' => 'Porsche', 'model' => 'Panamera', 'variant' => '4', 'year' => 2021, 'price' => 2650000000, 'condition' => 'bekas', 'mileage_km' => 21000, 'body_type' => 'sedan', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '2.9L twin-turbo V6', 'power_hp' => 330, 'seats' => 4, 'color' => 'Agate Grey', 'is_featured' => 1, 'description' => 'Sedan sport empat pintu dengan penggerak semua roda. Kabin lega untuk empat orang dewasa dan bagasi yang praktis untuk perjalanan jauh.', 'image' => 'images/cars/porsche-panamera-4.webp', 'status' => 'tersedia'],
+            ['slug' => 'porsche-panamera-4s', 'brand' => 'Porsche', 'model' => 'Panamera', 'variant' => '4S', 'year' => 2022, 'price' => 3150000000, 'condition' => 'bekas', 'mileage_km' => 14000, 'body_type' => 'sedan', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '2.9L twin-turbo V6', 'power_hp' => 440, 'seats' => 4, 'color' => 'Carrara White', 'is_featured' => 0, 'description' => 'Versi 4S dengan tenaga lebih besar, suspensi udara adaptif, dan interior kulit penuh.', 'image' => 'images/cars/porsche-panamera-4s.webp', 'status' => 'tersedia'],
+            ['slug' => 'porsche-718-cayman', 'brand' => 'Porsche', 'model' => '718', 'variant' => 'Cayman', 'year' => 2022, 'price' => 2200000000, 'condition' => 'bekas', 'mileage_km' => 12000, 'body_type' => 'coupe', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '2.0L turbo flat-4', 'power_hp' => 300, 'seats' => 2, 'color' => 'Racing Yellow', 'is_featured' => 0, 'description' => 'Coupe mesin tengah yang seimbang dan lincah di tikungan. Pilihan pas untuk akhir pekan di jalan berliku.', 'image' => 'images/cars/porsche-718-cayman.webp', 'status' => 'tersedia'],
+            ['slug' => 'porsche-718-boxster', 'brand' => 'Porsche', 'model' => '718', 'variant' => 'Boxster', 'year' => 2021, 'price' => 2050000000, 'condition' => 'bekas', 'mileage_km' => 17500, 'body_type' => 'convertible', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '2.0L turbo flat-4', 'power_hp' => 300, 'seats' => 2, 'color' => 'Jet Black', 'is_featured' => 0, 'description' => 'Roadster dua kursi dengan atap terbuka dan posisi mesin tengah. Kondisi terawat, ban baru.', 'image' => 'images/cars/porsche-718-boxster.webp', 'status' => 'tersedia'],
+            ['slug' => 'porsche-cayenne', 'brand' => 'Porsche', 'model' => 'Cayenne', 'variant' => 'Base', 'year' => 2019, 'price' => 1750000000, 'condition' => 'bekas', 'mileage_km' => 38000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '3.0L turbo V6', 'power_hp' => 340, 'seats' => 5, 'color' => 'Rhodium Silver', 'is_featured' => 0, 'description' => 'SUV mewah dengan performa sport. Lima penumpang, bagasi besar, dan nyaman untuk keluarga.', 'image' => 'images/cars/porsche-cayenne.webp', 'status' => 'tersedia'],
+            ['slug' => 'mercedes-sl-400', 'brand' => 'Mercedes-Benz', 'model' => 'SL', 'variant' => '400', 'year' => 2018, 'price' => 2300000000, 'condition' => 'bekas', 'mileage_km' => 26000, 'body_type' => 'convertible', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '3.0L twin-turbo V6', 'power_hp' => 367, 'seats' => 2, 'color' => 'Brilliant Blue', 'is_featured' => 0, 'description' => 'Grand tourer dengan atap keras lipat. Nyaman untuk perjalanan jauh dan tetap gagah saat atap terbuka.', 'image' => 'images/cars/mercedes-sl-400.webp', 'status' => 'tersedia'],
+            ['slug' => 'mg-hs', 'brand' => 'MG', 'model' => 'HS', 'variant' => '1.5T Magnify', 'year' => 2023, 'price' => 465000000, 'condition' => 'baru', 'mileage_km' => 0, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '1.5L turbo', 'power_hp' => 160, 'seats' => 5, 'color' => 'Dover White', 'is_featured' => 0, 'description' => 'SUV keluarga dengan fitur lengkap: sunroof panorama, kamera 360°, dan paket keselamatan aktif.', 'image' => 'images/cars/mg-hs.webp', 'status' => 'tersedia'],
+            ['slug' => 'ford-focus-st', 'brand' => 'Ford', 'model' => 'Focus', 'variant' => 'ST', 'year' => 2019, 'price' => 525000000, 'condition' => 'bekas', 'mileage_km' => 32000, 'body_type' => 'hatchback', 'transmission' => 'manual', 'fuel' => 'bensin', 'engine' => '2.3L EcoBoost', 'power_hp' => 280, 'seats' => 5, 'color' => 'Orange Fury', 'is_featured' => 0, 'description' => 'Hot hatch bertransmisi manual enam percepatan. Praktis untuk harian, seru di akhir pekan.', 'image' => 'images/cars/ford-focus-st.webp', 'status' => 'tersedia'],
+            ['slug' => 'audi-e-tron', 'brand' => 'Audi', 'model' => 'e-tron', 'variant' => '55 quattro', 'year' => 2022, 'price' => 1950000000, 'condition' => 'bekas', 'mileage_km' => 9000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'listrik', 'engine' => 'Dua motor listrik, baterai 95 kWh', 'power_hp' => 408, 'seats' => 5, 'color' => 'Galaxy Blue', 'is_featured' => 1, 'description' => 'SUV listrik penggerak semua roda. Senyap, akselerasi instan, dan bisa diisi daya di rumah.', 'image' => 'images/cars/audi-e-tron.webp', 'status' => 'tersedia'],
+            ['slug' => 'kia-sportage', 'brand' => 'Kia', 'model' => 'Sportage', 'variant' => 'GT-Line', 'year' => 2022, 'price' => 520000000, 'condition' => 'bekas', 'mileage_km' => 15000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '1.6L turbo', 'power_hp' => 177, 'seats' => 5, 'color' => 'Signal Red', 'is_featured' => 0, 'description' => 'SUV kompak bergaya sporty dengan layar ganda melengkung dan fitur bantuan pengemudi.', 'image' => 'images/cars/kia-sportage.webp', 'status' => 'tersedia'],
+            ['slug' => 'honda-civic-rs', 'brand' => 'Honda', 'model' => 'Civic', 'variant' => 'RS', 'year' => 2022, 'price' => 585000000, 'condition' => 'baru', 'mileage_km' => 0, 'body_type' => 'sedan', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '1.5L VTEC Turbo', 'power_hp' => 178, 'seats' => 5, 'color' => 'Platinum White Pearl', 'is_featured' => 0, 'description' => 'Sedan sporty yang irit dan nyaman. Garansi resmi dan paket servis gratis.', 'image' => 'images/cars/honda-civic-rs.webp', 'status' => 'tersedia'],
+            ['slug' => 'kia-sorento', 'brand' => 'Kia', 'model' => 'Sorento', 'variant' => '2.2 CRDi', 'year' => 2021, 'price' => 650000000, 'condition' => 'bekas', 'mileage_km' => 41000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'diesel', 'engine' => '2.2L turbodiesel', 'power_hp' => 199, 'seats' => 7, 'color' => 'Mineral Blue', 'is_featured' => 0, 'description' => 'SUV tujuh penumpang bermesin diesel yang bertenaga dan hemat untuk keluarga besar.', 'image' => 'images/cars/kia-sorento.webp', 'status' => 'tersedia'],
+            ['slug' => 'chevrolet-equinox', 'brand' => 'Chevrolet', 'model' => 'Equinox', 'variant' => '1.5 Turbo', 'year' => 2019, 'price' => 345000000, 'condition' => 'bekas', 'mileage_km' => 52000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '1.5L turbo', 'power_hp' => 170, 'seats' => 5, 'color' => 'Summit White', 'is_featured' => 0, 'description' => 'SUV menengah dengan kabin lega dan perlengkapan lengkap. Harga bersahabat untuk SUV turbo.', 'image' => 'images/cars/chevrolet-equinox.webp', 'status' => 'tersedia'],
+            ['slug' => 'mercedes-glc-coupe', 'brand' => 'Mercedes-Benz', 'model' => 'GLC', 'variant' => '300 Coupe', 'year' => 2021, 'price' => 1250000000, 'condition' => 'bekas', 'mileage_km' => 23000, 'body_type' => 'suv', 'transmission' => 'otomatis', 'fuel' => 'bensin', 'engine' => '2.0L turbo', 'power_hp' => 258, 'seats' => 5, 'color' => 'Dolomite Brown', 'is_featured' => 1, 'description' => 'SUV coupe dengan atap melandai yang elegan, interior premium, dan penggerak 4MATIC.', 'image' => 'images/cars/mercedes-glc-coupe.webp', 'status' => 'tersedia'],
+        ];
+
+        foreach ($cars as &$car) {
+            $car['created_at'] = $now;
+            $car['updated_at'] = $now;
+        }
+
+        $this->db->table('cars')->insertBatch($cars);
+    }
+}

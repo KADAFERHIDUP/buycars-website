@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BuyCars · Showroom Mobil Baru &amp; Bekas di Lhokseumawe</title>
+  <meta name="description" content="BuyCars: showroom mobil baru dan bekas di Lhokseumawe. Lihat mobil dalam 3D, cari di katalog, hitung simulasi kredit, dan booking test drive.">
+  <meta name="theme-color" content="#07080d">
+  <meta property="og:title" content="BuyCars · Showroom Mobil Lhokseumawe">
+  <meta property="og:description" content="Lihat mobil dalam 3D, cari di katalog, hitung simulasi kredit, dan booking test drive.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff7a1a'/%3E%3Cpath d='M12 38l6-12h22l10 8h4v8H12z' fill='%2307080d'/%3E%3Ccircle cx='22' cy='42' r='5' fill='%23fff'/%3E%3Ccircle cx='44' cy='42' r='5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.js" } }</script>
+</head>
+<body>
+  <!-- ikon -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.2-.3-.2-.6-.3z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 7l9 6 9-6" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9 9 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 15l4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v8M6 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-fuel" viewBox="0 0 24 24"><path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h14M5 10h10M15 8l3 3v6a1.5 1.5 0 0 0 3 0V9l-3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-seat" viewBox="0 0 24 24"><path d="M7 3h5l1 9h5a2 2 0 0 1 2 2v3H8z M8 17v4M18 17v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h14l-3-3M20 16H6l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 10h20M6 15h4" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-light" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="i-road" viewBox="0 0 24 24"><path d="M8 3L4 21M16 3l4 18M12 4v3M12 11v3M12 18v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  </svg>
+
+  <a class="skip" href="#katalog">Lewati ke katalog</a>
+
+  <header class="header" id="header">
+    <a href="#beranda" class="logo" aria-label="BuyCars, ke beranda">
+      <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M10 38l7-13h24l11 8h3v9H10z" fill="currentColor"/><circle cx="21" cy="43" r="5.5" fill="#07080d"/><circle cx="45" cy="43" r="5.5" fill="#07080d"/></svg></span>
+      <span>Buy<b>Cars</b></span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Menu utama">
+      <a href="#beranda">Beranda</a>
+      <a href="#katalog">Katalog</a>
+      <a href="#kredit">Simulasi kredit</a>
+      <a href="#layanan">Layanan</a>
+      <a href="#galeri">Galeri</a>
+      <a href="#ulasan">Ulasan</a>
+      <a href="#kontak">Kontak</a>
+    </nav>
+    <a href="#kontak" class="btn btn-primary btn-sm header-cta" data-testdrive>Booking test drive</a>
+    <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Buka menu" aria-expanded="false" aria-controls="nav"><svg><use href="#i-menu"/></svg></button>
+  </header>
+
+  <main>
+    <!-- ============================================================ HERO 3D -->
+    <section class="hero" id="beranda">
+      <div class="hero-stage" id="stage">
+        <img class="stage-fallback" src="images/cars/porsche-911-cabriolet.webp" alt="Porsche 911 Cabriolet merah" width="900" height="400">
+      </div>
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="dot"></span> Showroom mobil di Lhokseumawe</p>
+        <h1>Lihat mobil impianmu dari <em>setiap sudut</em>.</h1>
+        <p class="lead">Putar mobil 3D di samping, ganti warnanya, nyalakan lampunya. Lalu cari mobil yang pas di katalog, hitung cicilannya, dan booking test drive tanpa antre.</p>
+        <div class="hero-actions">
+          <a href="#katalog" class="btn btn-primary">Lihat katalog <svg><use href="#i-arrow"/></svg></a>
+          <a href="#kontak" class="btn btn-ghost" data-testdrive>Booking test drive</a>
+        </div>
+        <dl class="hero-stats" id="hero-stats">
+          <div><dt>Mobil siap</dt><dd data-stat="count">–</dd></div>
+          <div><dt>Merek</dt><dd data-stat="brands">–</dd></div>
+          <div><dt>Mulai dari</dt><dd data-stat="from">–</dd></div>
+        </dl>
+      </div>
+
+      <div class="configurator" id="configurator" aria-label="Atur mobil 3D">
+        <div class="cfg-group">
+                    <div class="swatches" role="radiogroup" aria-label="Warna cat">
+            <button type="button" role="radio" aria-checked="true" class="swatch" style="--c:#c8102e" data-color="#c8102e" title="Rosso"><span class="sr">Merah</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#f2f3f5" data-color="#f2f3f5" title="Pearl"><span class="sr">Putih</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#16181d" data-color="#16181d" title="Onyx"><span class="sr">Hitam</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#1d4fd6" data-color="#1d4fd6" title="Azure"><span class="sr">Biru</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#f4b400" data-color="#f4b400" title="Racing Yellow"><span class="sr">Kuning</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#7d8691" data-color="#7d8691" title="Graphite"><span class="sr">Abu-abu</span></button>
+            <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#0f6b4f" data-color="#0f6b4f" title="British Green"><span class="sr">Hijau</span></button>
+          </div>
+        </div>
+        <div class="cfg-group cfg-actions">
+          <button type="button" class="chip-btn" data-cfg="lights" aria-pressed="false"><svg><use href="#i-light"/></svg> Lampu</button>
+          <button type="button" class="chip-btn" data-cfg="drive" aria-pressed="false"><svg><use href="#i-road"/></svg> Jalan</button>
+          <button type="button" class="chip-btn" data-cfg="rotate" aria-pressed="true"><svg><use href="#i-rotate"/></svg> Putar</button>
+        </div>
+        <div class="cfg-group cfg-views">
+          <button type="button" class="view-btn" data-view="front">Depan</button>
+          <button type="button" class="view-btn" data-view="side">Samping</button>
+          <button type="button" class="view-btn" data-view="rear">Belakang</button>
+        </div>
+      </div>
+      <p class="drag-hint" aria-hidden="true">Geser untuk memutar · cubit atau scroll untuk zoom</p>
+    </section>
+
+    <!-- merek -->
+    <section class="brands" aria-label="Merek yang tersedia">
+      <div class="brand-track" id="brand-track"></div>
+    </section>
+
+    <!-- ============================================================ KATALOG -->
+    <section class="section" id="katalog">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Katalog</p>
+        <h2>Mobil yang siap kamu bawa pulang</h2>
+        <p class="sub">Semua mobil bisa dicek langsung di showroom. Filter sesuai kebutuhan, lalu buka detailnya.</p>
+      </div>
+
+      <form class="filters" id="filters" role="search" onsubmit="return false">
+        <label class="search">
+          <svg><use href="#i-search"/></svg>
+          <span class="sr">Cari mobil</span>
+          <input type="search" name="q" placeholder="Cari merek, model, atau warna…" autocomplete="off">
+        </label>
+        <div class="filter-row">
+          <label class="field-inline"><span>Merek</span><select name="brand"><option value="">Semua</option></select></label>
+          <label class="field-inline"><span>Bahan bakar</span><select name="fuel"><option value="">Semua</option><option value="bensin">Bensin</option><option value="diesel">Diesel</option><option value="listrik">Listrik</option><option value="hybrid">Hybrid</option></select></label>
+          <label class="field-inline"><span>Transmisi</span><select name="transmission"><option value="">Semua</option><option value="otomatis">Otomatis</option><option value="manual">Manual</option></select></label>
+          <label class="field-inline"><span>Kondisi</span><select name="condition"><option value="">Semua</option><option value="baru">Baru</option><option value="bekas">Bekas</option></select></label>
+          <label class="field-inline"><span>Urutkan</span><select name="sort"><option value="featured">Unggulan</option><option value="price_asc">Harga termurah</option><option value="price_desc">Harga termahal</option><option value="year_desc">Tahun terbaru</option><option value="km_asc">Kilometer terendah</option></select></label>
+        </div>
+        <div class="filter-row">
+          <div class="chips" id="body-chips" role="group" aria-label="Tipe bodi">
+            <button type="button" class="chip active" data-body="">Semua tipe</button>
+            <button type="button" class="chip" data-body="suv">SUV</button>
+            <button type="button" class="chip" data-body="sedan">Sedan</button>
+            <button type="button" class="chip" data-body="coupe">Coupe</button>
+            <button type="button" class="chip" data-body="convertible">Convertible</button>
+            <button type="button" class="chip" data-body="hatchback">Hatchback</button>
+          </div>
+          <label class="price-range"><span>Harga maks. <output id="price-out">Semua</output></span>
+            <input type="range" name="max" min="0" max="100" step="1" value="100" aria-label="Harga maksimal">
+          </label>
+        </div>
+      </form>
+
+      <p class="result-meta" aria-live="polite"><span id="result-count">Memuat katalog…</span> <button type="button" class="link-btn" id="reset-filters" hidden>Reset filter</button></p>
+      <div class="car-grid" id="car-grid"></div>
+      <div class="center"><button type="button" class="btn btn-ghost" id="load-more" hidden>Tampilkan lebih banyak</button></div>
+    </section>
+
+    <!-- ============================================================ KREDIT -->
+    <section class="section credit" id="kredit">
+      <div class="credit-grid">
+        <div class="section-head left">
+          <p class="eyebrow"><span class="dot"></span> Simulasi kredit</p>
+          <h2>Hitung cicilan sebelum datang</h2>
+          <p class="sub">Pilih mobil, atur uang muka dan tenor. Angka ini perkiraan dengan bunga flat. Angka final mengikuti leasing yang kamu pilih saat pengajuan.</p>
+          <ul class="ticks">
+            <li><svg><use href="#i-check"/></svg> Bisa kredit lewat beberapa leasing</li>
+            <li><svg><use href="#i-check"/></svg> Tenor 1 sampai 5 tahun</li>
+            <li><svg><use href="#i-check"/></svg> Bantu urus berkas dan survei</li>
+          </ul>
+        </div>
+        <form class="card calc" id="calc" onsubmit="return false">
+          <label class="field"><span>Mobil</span><select name="car" id="calc-car"><option value="">Isi harga sendiri</option></select></label>
+          <label class="field"><span>Harga mobil (Rp)</span><input name="price" inputmode="numeric" value="520.000.000" autocomplete="off"></label>
+          <label class="field"><span>Uang muka <output id="dp-out">30%</output></span><input type="range" name="dp" min="10" max="70" step="5" value="30"></label>
+          <div class="field"><span>Tenor</span>
+            <div class="seg" role="radiogroup" aria-label="Tenor">
+              <label><input type="radio" name="tenor" value="12"><span>1 th</span></label>
+              <label><input type="radio" name="tenor" value="24"><span>2 th</span></label>
+              <label><input type="radio" name="tenor" value="36" checked><span>3 th</span></label>
+              <label><input type="radio" name="tenor" value="48"><span>4 th</span></label>
+              <label><input type="radio" name="tenor" value="60"><span>5 th</span></label>
+            </div>
+          </div>
+          <label class="field"><span>Bunga flat per tahun (%)</span><input name="rate" type="number" min="0" max="25" step="0.1" value="5.5"></label>
+          <div class="calc-out" aria-live="polite">
+            <div><span>Cicilan per bulan</span><strong id="out-monthly">–</strong></div>
+            <div class="calc-row"><span>Uang muka</span><b id="out-dp">–</b></div>
+            <div class="calc-row"><span>Pokok pinjaman</span><b id="out-loan">–</b></div>
+            <div class="calc-row"><span>Total bunga</span><b id="out-interest">–</b></div>
+          </div>
+          <button type="button" class="btn btn-primary block" id="calc-wa"><svg><use href="#i-wa"/></svg> Ajukan lewat WhatsApp</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================================ LAYANAN -->
+    <section class="section" id="layanan">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Layanan</p>
+        <h2>Bukan cuma jual mobil</h2>
+      </div>
+      <div class="services">
+        <article class="service"><svg><use href="#i-search"/></svg><h3>Jual beli mobil</h3><p>Mobil baru dan bekas pilihan. Riwayat servis dan surat-surat bisa dicek sebelum kamu memutuskan.</p></article>
+        <article class="service"><svg><use href="#i-swap"/></svg><h3>Tukar tambah</h3><p>Bawa mobil lamamu, kami taksir harganya di tempat dan potong langsung dari harga mobil baru.</p></article>
+        <article class="service"><svg><use href="#i-card"/></svg><h3>Kredit &amp; leasing</h3><p>Bantu pengajuan kredit ke leasing, dari simulasi cicilan sampai berkas lengkap.</p></article>
+        <article class="service"><svg><use href="#i-shield"/></svg><h3>Inspeksi menyeluruh</h3><p>Mesin, rangka, kelistrikan, dan kaki-kaki dicek sebelum mobil dipajang di showroom.</p></article>
+        <article class="service"><svg><use href="#i-wrench"/></svg><h3>Servis &amp; perawatan</h3><p>Ganti oli, tune up, dan perawatan berkala supaya mobil tetap prima setelah dibeli.</p></article>
+        <article class="service"><svg><use href="#i-bolt"/></svg><h3>Mobil listrik</h3><p>Konsultasi mobil listrik dan hybrid, termasuk pemasangan charger di rumah.</p></article>
+      </div>
+    </section>
+
+    <!-- ============================================================ GALERI -->
+    <section class="section" id="galeri">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Galeri</p>
+        <h2>Inspirasi dari jalanan</h2>
+      </div>
+      <div class="gallery" id="gallery">
+        <button type="button" class="g-item tall"><img src="images/gallery/lamborghini-aventador.webp" alt="Lamborghini merah di jalan beraspal" loading="lazy"></button>
+        <button type="button" class="g-item"><img src="images/gallery/night-coupe.webp" alt="Coupe perak di jalan malam" loading="lazy"></button>
+        <button type="button" class="g-item"><img src="images/gallery/autumn-roadster.webp" alt="Roadster di jalan berdaun musim gugur" loading="lazy"></button>
+        <button type="button" class="g-item wide"><img src="images/gallery/sunset-lineup.webp" alt="Deretan mobil sport saat matahari terbenam" loading="lazy"></button>
+        <button type="button" class="g-item"><img src="images/gallery/classic-duo.webp" alt="Dua mobil sport klasik" loading="lazy"></button>
+        <button type="button" class="g-item"><img src="images/gallery/dodge-charger-1969.webp" alt="Dodge Charger 1969 hitam putih" loading="lazy"></button>
+        <button type="button" class="g-item wide"><img src="images/gallery/bugatti-chiron.webp" alt="Bugatti dengan efek cahaya biru" loading="lazy"></button>
+        <button type="button" class="g-item"><img src="images/gallery/green-classic.webp" alt="Muscle car hijau" loading="lazy"></button>
+      </div>
+    </section>
+
+    <!-- ============================================================ ULASAN -->
+    <section class="section" id="ulasan">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Ulasan</p>
+        <h2>Kata pelanggan kami</h2>
+        <p class="sub">Semua ulasan ditulis pelanggan sendiri dan tampil setelah dicek admin.</p>
+      </div>
+      <div class="reviews" id="reviews"></div>
+      <details class="card review-form-wrap">
+        <summary>Tulis ulasan</summary>
+        <form id="review-form" class="form-grid" novalidate>
+          <label class="field"><span>Nama</span><input name="name" required maxlength="60" autocomplete="name"></label>
+          <label class="field"><span>Mobil yang dibeli (opsional)</span><select name="car_id"><option value="">–</option></select></label>
+          <fieldset class="field rating-field"><legend>Nilai</legend>
+            <div class="rating" id="rating">
+              <input type="radio" name="rating" id="r5" value="5" checked><label for="r5" title="5"><svg><use href="#i-star"/></svg></label>
+              <input type="radio" name="rating" id="r4" value="4"><label for="r4" title="4"><svg><use href="#i-star"/></svg></label>
+              <input type="radio" name="rating" id="r3" value="3"><label for="r3" title="3"><svg><use href="#i-star"/></svg></label>
+              <input type="radio" name="rating" id="r2" value="2"><label for="r2" title="2"><svg><use href="#i-star"/></svg></label>
+              <input type="radio" name="rating" id="r1" value="1"><label for="r1" title="1"><svg><use href="#i-star"/></svg></label>
+            </div>
+          </fieldset>
+          <label class="field full"><span>Ulasan</span><textarea name="comment" rows="3" required minlength="10" maxlength="600"></textarea></label>
+          <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <div class="full form-foot"><button class="btn btn-primary" type="submit">Kirim ulasan</button><p class="form-msg" aria-live="polite"></p></div>
+        </form>
+      </details>
+    </section>
+
+    <!-- ============================================================ KONTAK + TEST DRIVE -->
+    <section class="section" id="kontak">
+      <div class="section-head">
+        <p class="eyebrow"><span class="dot"></span> Kontak</p>
+        <h2>Booking test drive atau tanya dulu</h2>
+      </div>
+      <div class="contact-grid">
+        <div class="card">
+          <div class="tabs" role="tablist">
+            <button type="button" role="tab" id="tab-drive" aria-controls="booking-form" aria-selected="true" class="tab active">Test drive</button>
+            <button type="button" role="tab" id="tab-msg" aria-controls="message-form" aria-selected="false" class="tab">Kirim pesan</button>
+          </div>
+          <form id="booking-form" class="form-grid pane" role="tabpanel" aria-labelledby="tab-drive" novalidate>
+            <label class="field full"><span>Mobil</span><select name="car_id" required><option value="">Pilih mobil…</option></select></label>
+            <label class="field"><span>Nama lengkap</span><input name="name" required maxlength="80" autocomplete="name"></label>
+            <label class="field"><span>Nomor WhatsApp</span><input name="phone" type="tel" required inputmode="tel" placeholder="08…" autocomplete="tel"></label>
+            <label class="field"><span>Tanggal</span><input name="date" type="date" required></label>
+            <label class="field"><span>Jam</span><select name="time" required><option>09:00</option><option>10:00</option><option>11:00</option><option>13:00</option><option>14:00</option><option>15:00</option><option>16:00</option></select></label>
+            <label class="field full"><span>Email (opsional)</span><input name="email" type="email" autocomplete="email"></label>
+            <label class="field full"><span>Catatan (opsional)</span><textarea name="notes" rows="2" maxlength="500" placeholder="Misal: mau coba di jalan tol, bawa mobil untuk tukar tambah…"></textarea></label>
+            <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="full form-foot"><button class="btn btn-primary" type="submit"><svg><use href="#i-cal"/></svg> Booking test drive</button><p class="form-msg" aria-live="polite"></p></div>
+          </form>
+          <form id="message-form" class="form-grid pane" role="tabpanel" aria-labelledby="tab-msg" hidden novalidate>
+            <label class="field"><span>Nama</span><input name="name" required maxlength="80" autocomplete="name"></label>
+            <label class="field"><span>Email</span><input name="email" type="email" required autocomplete="email"></label>
+            <label class="field"><span>Nomor WhatsApp (opsional)</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel"></label>
+            <label class="field"><span>Topik</span><select name="subject"><option>Tanya stok mobil</option><option>Tukar tambah</option><option>Kredit</option><option>Servis</option><option>Lainnya</option></select></label>
+            <label class="field full"><span>Pesan</span><textarea name="message" rows="4" required minlength="10" maxlength="2000"></textarea></label>
+            <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <div class="full form-foot"><button class="btn btn-primary" type="submit"><svg><use href="#i-mail"/></svg> Kirim pesan</button><p class="form-msg" aria-live="polite"></p></div>
+          </form>
+        </div>
+        <aside class="card contact-card">
+          <ul class="contact-list">
+            <li><svg><use href="#i-pin"/></svg><div><b>Showroom</b><span data-cfg-text="city"></span></div></li>
+            <li><svg><use href="#i-clock"/></svg><div><b>Jam buka</b><span data-cfg-text="hours"></span></div></li>
+            <li><svg><use href="#i-phone"/></svg><div><b>Telepon &amp; WhatsApp</b><a data-cfg-href="tel" data-cfg-text="phoneDisplay"></a></div></li>
+            <li><svg><use href="#i-mail"/></svg><div><b>Email</b><a data-cfg-href="mailto" data-cfg-text="email"></a></div></li>
+          </ul>
+          <div class="map-wrap">
+            <iframe class="map" id="map" title="Peta lokasi showroom BuyCars" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+          </div>
+          <a class="btn btn-ghost block" id="maps-link" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg> Buka di Google Maps</a>
+        </aside>
+      </div>
+    </section>
+
+    <!-- newsletter -->
+    <section class="newsletter">
+      <div>
+        <h2>Dapat kabar mobil baru masuk</h2>
+        <p>Kami kirim email saat ada stok baru atau promo. Tidak lebih dari dua kali sebulan.</p>
+      </div>
+      <form id="news-form" novalidate>
+        <label class="sr" for="news-email">Email</label>
+        <input id="news-email" type="email" name="email" placeholder="email@kamu.com" required autocomplete="email">
+        <button class="btn btn-primary" type="submit">Langganan</button>
+        <p class="form-msg" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <a href="#beranda" class="logo"><span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M10 38l7-13h24l11 8h3v9H10z" fill="currentColor"/><circle cx="21" cy="43" r="5.5" fill="#07080d"/><circle cx="45" cy="43" r="5.5" fill="#07080d"/></svg></span><span>Buy<b>Cars</b></span></a>
+        <p class="muted">Showroom mobil baru dan bekas di <span data-cfg-text="city"></span>.</p>
+      </div>
+      <nav aria-label="Tautan cepat">
+        <h3>Jelajahi</h3>
+        <a href="#katalog">Katalog</a><a href="#kredit">Simulasi kredit</a><a href="#layanan">Layanan</a><a href="#ulasan">Ulasan</a>
+      </nav>
+      <div>
+        <h3>Hubungi</h3>
+        <a data-cfg-href="wa"><svg><use href="#i-wa"/></svg> WhatsApp</a>
+        <a data-cfg-href="mailto"><svg><use href="#i-mail"/></svg> <span data-cfg-text="email"></span></a>
+        <a data-cfg-href="maps" target="_blank" rel="noopener"><svg><use href="#i-pin"/></svg> <span data-cfg-text="city"></span></a>
+      </div>
+    </div>
+    <p class="copy">© <span id="year">2026</span> BuyCars. Dibuat oleh Ahmad Umraithi. <span class="mode-badge" id="mode-badge" title="">Mode demo</span></p>
+  </footer>
+
+  <a class="wa-float" data-cfg-href="wa" target="_blank" rel="noopener" aria-label="Chat WhatsApp"><svg><use href="#i-wa"/></svg></a>
+
+  <!-- detail mobil -->
+  <dialog class="modal" id="car-modal" aria-labelledby="modal-title">
+    <button type="button" class="icon-btn modal-close" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+    <div class="modal-body" id="modal-body"></div>
+  </dialog>
+  <!-- lightbox galeri -->
+  <dialog class="lightbox" id="lightbox" aria-label="Foto galeri">
+    <button type="button" class="icon-btn modal-close" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+    <img alt="">
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
