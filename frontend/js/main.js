@@ -14,6 +14,13 @@ const LABEL = {
   fuel: { bensin: 'Bensin', diesel: 'Diesel', listrik: 'Listrik', hybrid: 'Hybrid' },
   trans: { otomatis: 'Otomatis', manual: 'Manual' },
 };
+// images: Unsplash photos are resized by Unsplash itself; local uploads are used as they are
+const isUnsplash = src => /^https:\/\/images\.unsplash\.com\//.test(src || '');
+const imgAt = (src, w) => isUnsplash(src) ? `${src}${src.includes('?') ? '&' : '?'}auto=format&fit=crop&w=${w}&q=72` : src;
+const srcsetOf = (src, widths = [480, 800, 1200]) => isUnsplash(src) ? widths.map(w => `${imgAt(src, w)} ${w}w`).join(', ') : '';
+const utm = u => `${u}${u.includes('?') ? '&' : '?'}utm_source=buycars&utm_medium=referral`;
+const creditOf = c => !c.image_credit ? '' : `Foto: <a href="${esc(utm(c.image_credit_url || 'https://unsplash.com'))}" target="_blank" rel="noopener">${esc(c.image_credit)}</a>`
+  + (isUnsplash(c.image) ? ` di <a href="${esc(utm('https://unsplash.com'))}" target="_blank" rel="noopener">Unsplash</a>` : '');
 const nameOf = c => `${c.brand} ${c.model} ${c.variant || ''}`.trim();
 const specOf = c => [c.engine, c.power_hp ? `${c.power_hp} hp` : '', LABEL.trans[c.transmission]].filter(Boolean).join(' · ');
 const monthly = (price, dpPct, months, ratePct) => {
@@ -63,7 +70,7 @@ function route() {
   const target = VIEWS[view];
   $$('.view').forEach(v => { v.hidden = v.id !== target; });
   $$('[data-nav]').forEach(a => { if (a.dataset.nav === view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-  if (view === 'beranda' && !threeStarted) { threeStarted = true; setup3D(); }
+  if (view === 'beranda') restartHero(); else clearInterval(heroT);
   if (target === 'view-catalog') { if (changed) shown = 12; renderCars(); }
   if (view === 'ulasan') loadReviews();
   closeFilters();
@@ -96,6 +103,53 @@ async function setup3D() {
   } catch (e) {
     document.body.classList.add('no-3d');
     console.info('3D dimatikan:', e.message);
+  }
+}
+
+// ---------------------------------------------------------------- hero (Beranda): photo slideshow, 3D on request
+let heroCars = [], heroIdx = 0, heroT = 0;
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setupHero() {
+  const feat = cars.filter(c => c.is_featured);
+  heroCars = (feat.length ? feat : cars).slice(0, 5);
+  if (!heroCars.length) return;
+  $('#hero-media').innerHTML = heroCars.map((c, i) => `<img class="hero-img" src="${esc(imgAt(c.image, 1600))}" srcset="${esc(srcsetOf(c.image, [960, 1600, 2400]))}" sizes="(max-width: 1040px) 100vw, 80vw" alt="${esc(nameOf(c))} warna ${esc(c.color)}"${i ? ' loading="lazy"' : ' fetchpriority="high"'}>`).join('');
+  $('#hero-thumbs').innerHTML = heroCars.map((c, i) => `<button type="button" class="hero-thumb" data-hero="${i}" aria-label="Tampilkan ${esc(nameOf(c))}"><img src="${esc(imgAt(c.image, 240))}" alt=""></button>`).join('');
+  $('#hero-thumbs').addEventListener('click', e => { const b = e.target.closest('[data-hero]'); if (b) { showHero(Number(b.dataset.hero)); restartHero(); } });
+  const hero = $('#hero');
+  hero.addEventListener('pointerenter', () => clearInterval(heroT));
+  hero.addEventListener('pointerleave', restartHero);
+  $('#hero-detail').addEventListener('click', () => openDetail(heroCars[heroIdx].id));
+  $('#mode-3d').addEventListener('click', toggle3D);
+  showHero(0);
+}
+function showHero(i) {
+  heroIdx = i;
+  const c = heroCars[i];
+  $$('.hero-img').forEach((im, k) => im.classList.toggle('on', k === i));
+  $$('.hero-thumb').forEach((b, k) => b.setAttribute('aria-current', String(k === i)));
+  $('#hero-now').innerHTML = `<span>${c.condition === 'baru' ? 'Baru' : 'Bekas'} · ${c.year}</span><b>${esc(nameOf(c))}</b><span>${short(c.price)} · ±${short(monthly(c.price, 30, 36, 5.5).monthly)}/bln</span>`;
+  $('#hero-credit').innerHTML = creditOf(c);
+}
+function restartHero() {
+  clearInterval(heroT);
+  if (calm() || heroCars.length < 2) return;
+  heroT = setInterval(() => {
+    if (view === 'beranda' && !document.hidden && !document.body.classList.contains('mode-3d')) showHero((heroIdx + 1) % heroCars.length);
+  }, 6500);
+}
+async function toggle3D() {
+  const on = !document.body.classList.contains('mode-3d');
+  const btn = $('#mode-3d');
+  document.body.classList.toggle('mode-3d', on);
+  btn.setAttribute('aria-pressed', String(on));
+  $('span', btn).textContent = on ? 'Kembali ke foto' : 'Studio 3D';
+  $('#stage').hidden = !on;
+  $('#configurator').hidden = !on;
+  if (on && !threeStarted) { threeStarted = true; await setup3D(); }
+  if (on && document.body.classList.contains('no-3d')) {
+    toast('Browser ini belum mendukung tampilan 3D.');
+    toggle3D();
   }
 }
 
@@ -184,7 +238,7 @@ function card(c, i = 0) {
     <div class="card-meta"><span>${cond} · ${c.year} · ${Number(c.mileage_km).toLocaleString('id-ID')} km</span>
       <button type="button" class="fav" data-fav="${c.id}" aria-pressed="${fav}" aria-label="${fav ? 'Hapus dari' : 'Simpan ke'} favorit: ${esc(nameOf(c))}"><svg><use href="#i-heart${fav ? '-fill' : ''}"/></svg></button></div>
     <button type="button" class="card-media" data-detail="${c.id}" aria-label="Lihat detail ${esc(nameOf(c))}">
-      <img src="${esc(c.image)}" alt="${esc(nameOf(c))} warna ${esc(c.color)}" loading="lazy" width="900" height="500">
+      <img src="${esc(imgAt(c.image, 800))}" srcset="${esc(srcsetOf(c.image))}" sizes="(max-width: 720px) 92vw, (max-width: 1280px) 45vw, 340px" alt="${esc(nameOf(c))} warna ${esc(c.color)}" loading="lazy" width="800" height="500">
     </button>
     <div class="card-info">
       <div><h3>${esc(nameOf(c))}</h3><p>${esc(specOf(c))}</p></div>
@@ -238,7 +292,7 @@ function renderMapCard() {
   const box = $('#map-card');
   const c = cars.find(x => String(x.id) === String(selectedId));
   if (!box || !c) { if (box) box.innerHTML = ''; return; }
-  box.innerHTML = `<img src="${esc(c.image)}" alt="">
+  box.innerHTML = `<img src="${esc(imgAt(c.image, 600))}" alt="">
     <div><h3>${esc(nameOf(c))}</h3><p>${esc(specOf(c))}</p></div>
     <p>Bisa dilihat di showroom ${esc(CFG.city)}</p>
     <button type="button" class="btn btn-primary btn-sm" data-book="${c.id}">Booking <span>${short(c.price)}</span></button>`;
@@ -280,7 +334,7 @@ function openDetail(id, push = true) {
         <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
         <button type="button" class="fav" data-fav="${c.id}" aria-pressed="${fav}" aria-label="${fav ? 'Hapus dari' : 'Simpan ke'} favorit"><svg><use href="#i-heart${fav ? '-fill' : ''}"/></svg></button>
       </div>
-      <div class="drawer-media"><img src="${esc(c.image)}" alt="${esc(nameOf(c))} warna ${esc(c.color)}"></div>
+      <div class="drawer-media"><img src="${esc(imgAt(c.image, 1200))}" srcset="${esc(srcsetOf(c.image, [600, 1200, 1800]))}" sizes="(max-width: 560px) 100vw, 560px" alt="${esc(nameOf(c))} warna ${esc(c.color)}">${c.image_credit ? `<p class="photo-credit">${creditOf(c)}</p>` : ''}</div>
       <div class="drawer-title">
         <div><h2 id="drawer-title">${esc(nameOf(c))}</h2><p>${c.year} · ${esc(specOf(c))}</p></div>
         <div class="price">${short(c.price)}<small>${rupiah(c.price)}</small></div>
@@ -550,6 +604,16 @@ function setupClicks() {
 }
 
 // ---------------------------------------------------------------- boot
+// a photo that cannot load (offline, blocked host) falls back to the placeholder
+document.addEventListener('error', e => {
+  const im = e.target;
+  if (!(im instanceof HTMLImageElement) || im.dataset.fallback) return;
+  im.dataset.fallback = '1';
+  im.removeAttribute('srcset');
+  im.src = 'images/cars/placeholder.webp';
+  im.closest('.card-media, .drawer-media, .hero, .map-card, .hero-thumb')?.classList.add('no-photo');
+}, true);
+
 async function boot() {
   applyConfig();
   setupClicks();
@@ -569,6 +633,7 @@ async function boot() {
   setupCalc();
   setupForms();
   homeExtras();
+  setupHero();
   addEventListener('hashchange', route);
   view = null;
   route();

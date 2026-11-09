@@ -11,7 +11,7 @@ class CarModel extends Model
     protected $useTimestamps = true;
     protected $allowedFields = [
         'slug', 'brand', 'model', 'variant', 'year', 'price', 'condition', 'mileage_km', 'body_type',
-        'transmission', 'fuel', 'engine', 'power_hp', 'seats', 'color', 'description', 'image', 'is_featured', 'status',
+        'transmission', 'fuel', 'engine', 'power_hp', 'seats', 'color', 'description', 'image', 'image_credit', 'image_credit_url', 'is_featured', 'status',
     ];
 
     /** Bentuk data untuk API: angka sebagai angka, gambar sebagai URL lengkap. */

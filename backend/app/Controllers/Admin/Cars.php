@@ -9,6 +9,9 @@ class Cars extends BaseController
 {
     private CarModel $cars;
 
+    /** Link foto dari form (dipakai kalau tidak ada file yang diunggah). */
+    private ?string $imageUrl = null;
+
     public function __construct()
     {
         $this->cars = new CarModel();
@@ -51,7 +54,7 @@ class Cars extends BaseController
         if ($image === false) {
             return redirect()->back()->withInput()->with('error', 'Foto harus JPG, PNG, atau WEBP, maksimal 3 MB.');
         }
-        $data['image'] = $image;
+        $data['image'] = $image ?? $this->imageUrl;
         $data['slug']  = $this->cars->makeSlug($data);
         $this->cars->insert($data);
 
@@ -78,7 +81,8 @@ class Cars extends BaseController
         if ($image === false) {
             return redirect()->back()->withInput()->with('error', 'Foto harus JPG, PNG, atau WEBP, maksimal 3 MB.');
         }
-        if ($image !== null) {
+        $image ??= $this->imageUrl;
+        if ($image !== null && $image !== $car['image']) {
             $this->removeUpload($car['image']);
             $data['image'] = $image;
         }
@@ -139,6 +143,9 @@ class Cars extends BaseController
             'color'        => 'required|max_length[40]',
             'description'  => 'permit_empty|max_length[2000]',
             'status'       => 'required|' . $in($cfg->carStatuses),
+            'image_url'        => 'permit_empty|valid_url_strict[https]|max_length[255]',
+            'image_credit'     => 'permit_empty|max_length[80]',
+            'image_credit_url' => 'permit_empty|valid_url_strict[https]|max_length[255]',
         ];
 
         $post          = $this->request->getPost();
@@ -153,9 +160,13 @@ class Cars extends BaseController
         $data['mileage_km']  = (int) ($data['mileage_km'] ?: 0);
         $data['power_hp']    = $data['power_hp'] !== '' ? (int) $data['power_hp'] : null;
         $data['is_featured'] = $this->request->getPost('is_featured') ? 1 : 0;
-        foreach (['brand', 'model', 'variant', 'engine', 'color', 'description'] as $k) {
+        foreach (['brand', 'model', 'variant', 'engine', 'color', 'description', 'image_credit'] as $k) {
             $data[$k] = trim(strip_tags((string) $data[$k]));
         }
+        $data['image_credit']     = $data['image_credit'] ?: null;
+        $data['image_credit_url'] = $data['image_credit_url'] ?: null;
+        $this->imageUrl           = trim((string) $data['image_url']) ?: null;
+        unset($data['image_url']);
 
         return $data;
     }

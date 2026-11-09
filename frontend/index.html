@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://images.unsplash.com">
   <title>BuyCars · Showroom Mobil Baru &amp; Bekas di Lhokseumawe</title>
-  <meta name="description" content="BuyCars: showroom mobil baru dan bekas di Lhokseumawe. Cari mobil dengan filter lengkap, lihat dalam 3D, hitung cicilan, dan booking test drive.">
+  <meta name="description" content="BuyCars: showroom mobil baru dan bekas di Lhokseumawe. Mobil sport dan SUV mewah pilihan: filter lengkap, hitung cicilan, dan booking test drive.">
   <meta name="theme-color" content="#08090d">
   <meta property="og:title" content="BuyCars · Showroom Mobil Lhokseumawe">
-  <meta property="og:description" content="Cari mobil dengan filter lengkap, lihat dalam 3D, hitung cicilan, dan booking test drive.">
+  <meta property="og:description" content="Mobil sport dan SUV mewah pilihan: filter lengkap, hitung cicilan, dan booking test drive.">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff7a1a'/%3E%3Cpath d='M12 38l6-12h22l10 8h4v8H12z' fill='%2307080d'/%3E%3Ccircle cx='22' cy='42' r='5' fill='%23fff'/%3E%3Ccircle cx='44' cy='42' r='5' fill='%23fff'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,7 +83,7 @@
     <!-- ============================================================ SIDEBAR -->
     <nav class="sidebar" aria-label="Menu utama">
       <div class="side-group">
-        <a href="#beranda" data-nav="beranda"><svg><use href="#i-cube"/></svg><span>Beranda 3D</span></a>
+        <a href="#beranda" data-nav="beranda"><svg><use href="#i-home"/></svg><span>Beranda</span></a>
         <a href="#mobil" data-nav="mobil"><svg><use href="#i-car"/></svg><span>Mobil</span></a>
         <a href="#favorit" data-nav="favorit"><svg><use href="#i-heart"/></svg><span>Favorit</span><b class="count" id="fav-count" hidden>0</b></a>
         <a href="#terakhir" data-nav="terakhir"><svg><use href="#i-history"/></svg><span>Terakhir dilihat</span></a>
@@ -211,21 +212,31 @@
 
       <!-- BERANDA 3D -->
       <section class="view view-home" id="view-beranda" aria-labelledby="home-title" hidden>
-        <div class="home-stage" id="stage">
-          <img class="stage-fallback" src="images/cars/porsche-911-cabriolet.webp" alt="Porsche 911 Cabriolet merah" width="900" height="400">
+        <div class="hero" id="hero">
+          <div class="hero-media" id="hero-media"></div>
+          <div class="home-stage" id="stage" hidden></div>
+          <div class="home-copy">
+            <p class="eyebrow"><span class="dot"></span> Koleksi pilihan</p>
+            <h1 id="home-title">Mobil premium, <em>siap Anda kendarai</em>.</h1>
+            <p class="lead">Mobil sport, SUV mewah, dan grand tourer pilihan. Cek kondisinya, hitung cicilan, lalu booking test drive di showroom kami.</p>
+            <div class="hero-cta">
+              <a href="#mobil" class="btn btn-primary">Lihat katalog <svg><use href="#i-arrow"/></svg></a>
+              <button type="button" class="btn btn-ghost" id="hero-detail">Detail mobil ini</button>
+            </div>
+            <dl class="hero-stats">
+              <div><dt>Mobil siap</dt><dd data-stat="count">–</dd></div>
+              <div><dt>Merek</dt><dd data-stat="brands">–</dd></div>
+              <div><dt>Mulai dari</dt><dd data-stat="from">–</dd></div>
+            </dl>
+          </div>
+          <button type="button" class="chip-btn hero-3d" id="mode-3d" aria-pressed="false"><svg><use href="#i-cube"/></svg><span>Studio 3D</span></button>
+          <div class="hero-side">
+            <p class="hero-now" id="hero-now" aria-live="polite"></p>
+            <div class="hero-thumbs" id="hero-thumbs" aria-label="Pilih mobil unggulan"></div>
+          </div>
+          <p class="photo-credit hero-credit" id="hero-credit"></p>
         </div>
-        <div class="home-copy">
-          <p class="eyebrow"><span class="dot"></span> Showroom 3D</p>
-          <h1 id="home-title">Lihat mobilmu dari <em>setiap sudut</em>.</h1>
-          <p class="lead">Putar, ganti warna cat, nyalakan lampu, lalu pilih mobil yang pas dari katalog.</p>
-          <a href="#mobil" class="btn btn-primary">Lihat katalog <svg><use href="#i-arrow"/></svg></a>
-          <dl class="hero-stats">
-            <div><dt>Mobil siap</dt><dd data-stat="count">–</dd></div>
-            <div><dt>Merek</dt><dd data-stat="brands">–</dd></div>
-            <div><dt>Mulai dari</dt><dd data-stat="from">–</dd></div>
-          </dl>
-        </div>
-        <div class="configurator" id="configurator" aria-label="Atur mobil 3D">
+        <div class="configurator" id="configurator" aria-label="Atur mobil 3D" hidden>
           <div class="swatches" role="radiogroup" aria-label="Warna cat">
             <button type="button" role="radio" aria-checked="true" class="swatch" style="--c:#c8102e" data-color="#c8102e" title="Merah"><span class="sr">Merah</span></button>
             <button type="button" role="radio" aria-checked="false" class="swatch" style="--c:#f2f3f5" data-color="#f2f3f5" title="Putih"><span class="sr">Putih</span></button>

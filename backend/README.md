@@ -45,7 +45,7 @@ Kalau frontend dibuka dari alamat lain (misalnya GitHub Pages), tambahkan alamat
 
 - **Dashboard:** booking baru, mobil tersedia, nilai stok, pesan belum dibaca, ulasan menunggu, dan jadwal test drive terdekat.
 - **Booking:** filter per status atau jadwal mendatang, ubah status (baru → dikonfirmasi → selesai/batal), dan tombol WhatsApp untuk konfirmasi ke pelanggan.
-- **Mobil:** tambah, edit, hapus, upload foto (JPG/PNG/WEBP maks. 3 MB), tandai unggulan, ubah status tersedia/dipesan/terjual.
+- **Mobil:** tambah, edit, hapus, upload foto (JPG/PNG/WEBP maks. 3 MB) atau tempel link foto https beserta kredit fotografer, tandai unggulan, ubah status tersedia/dipesan/terjual.
 - **Pesan:** pesan dari form kontak, balas lewat email/WhatsApp, tandai dibaca.
 - **Ulasan:** setujui, sembunyikan, atau hapus.
 - **Newsletter:** daftar email dan unduh CSV.

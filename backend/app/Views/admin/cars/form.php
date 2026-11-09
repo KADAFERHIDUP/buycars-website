@@ -35,8 +35,11 @@ $sel = static function (string $name, array $opts, $current) {
         <div class="full photo">
             <?php if ($car && $car['image']): ?><img src="<?= esc(car_image_url($car['image'])) ?>" alt=""><?php endif ?>
             <label>Foto mobil <?= $car ? '(kosongkan kalau tidak diganti)' : '' ?><input type="file" name="image" accept="image/jpeg,image/png,image/webp"></label>
-            <p class="muted">JPG, PNG, atau WEBP, maksimal 3 MB. Paling bagus foto tanpa latar (PNG/WEBP transparan) dengan mobil menghadap serong.</p>
+            <p class="muted">JPG, PNG, atau WEBP, maksimal 3 MB. Paling bagus foto landscape dengan mobil menghadap serong.</p>
         </div>
+        <label class="full">Atau link foto (https)<input name="image_url" type="url" value="<?= esc(old('image_url', $car && preg_match('#^https://#', (string) $car['image']) ? $car['image'] : '')) ?>" maxlength="255" placeholder="https://images.unsplash.com/photo-..."></label>
+        <label>Kredit foto<input name="image_credit" value="<?= esc($v('image_credit')) ?>" maxlength="80" placeholder="Nama fotografer"></label>
+        <label>Link kredit foto<input name="image_credit_url" type="url" value="<?= esc($v('image_credit_url')) ?>" maxlength="255" placeholder="https://unsplash.com/@nama"></label>
     </div>
     <div class="form-foot">
         <a class="btn" href="<?= site_url('admin/mobil') ?>">Batal</a>
