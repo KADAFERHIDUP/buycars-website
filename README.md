@@ -11,12 +11,17 @@ Website showroom mobil baru dan bekas di Lhokseumawe, oleh **Ahmad Umraithi**. D
 
 ## Fitur
 
-- **Mobil 3D interaktif** di halaman utama, dibuat langsung dengan three.js tanpa file model: bisa diputar dan di-zoom, ganti 7 warna cat, nyalakan lampu, mode "jalan" (roda berputar, marka jalan bergerak), dan pindah sudut kamera (depan, samping, belakang). Kalau browser tidak mendukung WebGL2, otomatis tampil foto biasa.
-- **Katalog** 15 mobil dengan pencarian, filter (merek, bahan bakar, transmisi, kondisi, tipe bodi, harga maksimal), urutan, dan halaman detail berisi spesifikasi serta contoh cicilan. Kartu mobil punya efek 3D saat kursor bergerak di atasnya.
+Tampilannya dashboard gelap: bilah atas (logo, jam WIB, kota, pencarian), menu samping, panel filter, dan isi di kanan.
+
+- **Katalog** 15 mobil dalam grid kartu (kondisi, tahun, kilometer, harga, cicilan per bulan). Panel filter berisi kondisi (semua / baru / bekas), "siap hari ini", rentang harga dengan histogram, merek, tahun, tipe bodi, transmisi, dan bahan bakar. Ada pencarian di bilah atas dan pilihan urutan.
+- **Tampilan peta:** daftar mobil di kiri, peta lokasi showroom di kanan, dengan kartu mobil yang sedang dipilih dan tombol booking.
+- **Panel detail** yang meluncur dari samping, dengan tab Info, Spesifikasi, Kredit, dan Lokasi, plus harga tunai dan cicilan 3 dan 5 tahun. Setiap mobil punya link sendiri (`#mobil/nama-mobil`).
+- **Favorit dan Terakhir dilihat**, tersimpan di browser pengunjung.
+- **Mobil 3D interaktif** di menu Beranda, dibuat dengan three.js tanpa file model: bisa diputar dan di-zoom, 7 warna cat, lampu, mode jalan, dan 3 sudut kamera. Kalau WebGL2 tidak didukung, tampil foto biasa.
 - **Simulasi kredit:** uang muka, tenor 1–5 tahun, bunga flat, lalu diajukan lewat WhatsApp.
 - **Booking test drive:** tanggal mulai besok, Senin–Sabtu, dengan jam yang tersedia. Dengan backend, tersimpan di database dan mendapat kode booking. Tanpa backend, dikirim lewat WhatsApp.
 - **Form kontak, newsletter, dan ulasan.** Ulasan hanya tampil setelah disetujui admin, tanpa ulasan palsu.
-- **Responsif** dari HP 360 px sampai layar lebar, mendukung keyboard, dan menghormati pengaturan *reduced motion*.
+- **Responsif:** di layar sedang menu samping jadi ikon dan filter jadi panel geser; di HP menu pindah ke bawah. Mendukung keyboard dan pengaturan *reduced motion*.
 
 ## Dua mode
 
@@ -34,7 +39,7 @@ Mode dipilih otomatis (`frontend/js/config.js`, `api: 'auto'`). Kalau website di
 frontend/
   index.html          halaman utama
   css/style.css       tampilan (tema gelap, responsif)
-  js/main.js          katalog, filter, kredit, form, galeri
+  js/main.js          menu, katalog, filter, peta, detail, kredit, form
   js/car3d.js         mobil 3D (three.js)
   js/api.js           penghubung ke backend
   js/config.js        kontak showroom & mode API
@@ -48,7 +53,7 @@ backend/
 
 ## Catatan
 
-Harga, kilometer, dan spesifikasi di katalog adalah **data contoh** untuk demo showroom. Foto mobil dan galeri berasal dari file project sebelumnya.
+Harga, kilometer, dan spesifikasi di katalog adalah **data contoh** untuk demo showroom. Foto mobil berasal dari file project sebelumnya.
 
 ## Kontak
 - Email: umraithi769@gmail.com

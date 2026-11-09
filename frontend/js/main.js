@@ -1,4 +1,4 @@
-/* BuyCars · interaksi halaman */
+/* BuyCars · dashboard katalog */
 import * as api from './api.js';
 
 const CFG = window.BUYCARS || {};
@@ -8,66 +8,83 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const rupiah = n => 'Rp ' + Math.round(n).toLocaleString('id-ID');
 const short = n => n >= 1e9 ? `Rp ${(n / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 2 })} M` : `Rp ${Math.round(n / 1e6).toLocaleString('id-ID')} jt`;
 const waLink = text => `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(text)}`;
+const mapSrc = () => `https://www.google.com/maps?q=${encodeURIComponent(CFG.mapsQuery)}&z=13&output=embed`;
 const LABEL = {
   body: { suv: 'SUV', sedan: 'Sedan', coupe: 'Coupe', convertible: 'Convertible', hatchback: 'Hatchback', mpv: 'MPV', pickup: 'Pickup' },
   fuel: { bensin: 'Bensin', diesel: 'Diesel', listrik: 'Listrik', hybrid: 'Hybrid' },
   trans: { otomatis: 'Otomatis', manual: 'Manual' },
 };
 const nameOf = c => `${c.brand} ${c.model} ${c.variant || ''}`.trim();
+const specOf = c => [c.engine, c.power_hp ? `${c.power_hp} hp` : '', LABEL.trans[c.transmission]].filter(Boolean).join(' · ');
+const monthly = (price, dpPct, months, ratePct) => {
+  const dp = price * dpPct / 100, loan = price - dp, interest = loan * (ratePct / 100) * (months / 12);
+  return { dp, loan, interest, monthly: (loan + interest) / months };
+};
 
 let cars = [];
-let shown = 9;
-const filter = { q: '', brand: '', fuel: '', transmission: '', condition: '', body: '', max: Infinity, sort: 'featured' };
+let view = 'mobil';
+let shown = 12;
+let selectedId = null;
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } },
+};
+let favs = new Set(store.get('buycars-fav').map(String));
+let recent = store.get('buycars-recent').map(String);
 
 // ---------------------------------------------------------------- toast
 let toastT = 0;
 function toast(msg) {
   const t = $('#toast');
   t.textContent = msg; t.classList.add('show');
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3200);
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ---------------------------------------------------------------- config into the page
+// ---------------------------------------------------------------- config + clock
 function applyConfig() {
   $$('[data-cfg-text]').forEach(el => { el.textContent = CFG[el.dataset.cfgText] || ''; });
-  const href = { tel: `tel:+${CFG.whatsapp}`, mailto: `mailto:${CFG.email}`, wa: waLink('Halo BuyCars, saya mau tanya soal mobil.'), maps: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CFG.mapsQuery)}` };
-  $$('[data-cfg-href]').forEach(el => { el.href = href[el.dataset.cfgHref]; if (el.dataset.cfgHref === 'wa') { el.target = '_blank'; el.rel = 'noopener'; } });
-  $('#maps-link').href = href.maps;
-  $('#map').src = `https://www.google.com/maps?q=${encodeURIComponent(CFG.mapsQuery)}&z=13&output=embed`;
+  const href = { tel: `tel:+${CFG.whatsapp}`, mailto: `mailto:${CFG.email}`, wa: waLink('Halo BuyCars, saya mau tanya soal mobil.') };
+  $$('[data-cfg-href]').forEach(el => { el.href = href[el.dataset.cfgHref]; });
+  $('#maps-link').href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(CFG.mapsQuery)}`;
   $('#year').textContent = new Date().getFullYear();
+  const tick = () => { $('#clock').textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' }) + ' WIB'; };
+  tick(); setInterval(tick, 20000);
 }
 
-// ---------------------------------------------------------------- header + nav
-function setupNav() {
-  const header = $('#header'), nav = $('#nav'), btn = $('#menu-btn');
-  const onScroll = () => header.classList.toggle('scrolled', scrollY > 10);
-  addEventListener('scroll', onScroll, { passive: true }); onScroll();
-  const close = () => { nav.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); };
-  btn.addEventListener('click', () => { const o = nav.classList.toggle('open'); btn.setAttribute('aria-expanded', String(o)); });
-  nav.addEventListener('click', e => { if (e.target.closest('a')) close(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  // highlight the section in view
-  const links = new Map($$('a', nav).map(a => [a.getAttribute('href').slice(1), a]));
-  const io = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { links.forEach(a => a.classList.remove('active')); links.get(e.target.id)?.classList.add('active'); }
-  }), { rootMargin: '-45% 0px -50% 0px' });
-  links.forEach((_, id) => { const s = document.getElementById(id); if (s) io.observe(s); });
+// ---------------------------------------------------------------- views (hash routing)
+const VIEWS = { beranda: 'view-beranda', mobil: 'view-catalog', favorit: 'view-catalog', terakhir: 'view-catalog', kredit: 'view-kredit', kontak: 'view-kontak', ulasan: 'view-ulasan' };
+let threeStarted = false;
+function route() {
+  const [name, slug] = location.hash.slice(1).split('/');
+  const next = VIEWS[name] ? name : 'mobil';
+  const changed = next !== view;
+  view = next;
+  document.body.dataset.view = view;
+  const target = VIEWS[view];
+  $$('.view').forEach(v => { v.hidden = v.id !== target; });
+  $$('[data-nav]').forEach(a => { if (a.dataset.nav === view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  if (view === 'beranda' && !threeStarted) { threeStarted = true; setup3D(); }
+  if (target === 'view-catalog') { if (changed) shown = 12; renderCars(); }
+  if (view === 'ulasan') loadReviews();
+  closeFilters();
+  if (changed) { scrollTo({ top: 0 }); $('#main').focus({ preventScroll: true }); }
+  if (slug) { const c = cars.find(x => x.slug === slug || String(x.id) === slug); if (c) openDetail(c.id, false); }
 }
 
-// ---------------------------------------------------------------- 3D hero
+// ---------------------------------------------------------------- 3D (Beranda)
 async function setup3D() {
   const stage = $('#stage');
   try {
     const { initCar3D, webglAvailable } = await import('./car3d.js');
     if (!webglAvailable()) throw new Error('WebGL2 tidak tersedia');
-    const car = initCar3D(stage, { color: '#c8102e', shift: w => (innerWidth > 980 ? 0.3 : 0) });
+    const car = initCar3D(stage, { color: '#c8102e', shift: () => (innerWidth > 1040 ? 0.32 : 0) });
     document.body.classList.add('has-3d');
     window.__car = car;
     $$('.swatch').forEach(b => b.addEventListener('click', () => {
       $$('.swatch').forEach(x => x.setAttribute('aria-checked', String(x === b)));
       car.setColor(b.dataset.color);
     }));
-    const press = (name, on) => $(`[data-cfg="${name}"]`).setAttribute('aria-pressed', String(on));
+    const press = (n, on) => $(`[data-cfg="${n}"]`).setAttribute('aria-pressed', String(on));
     $$('[data-cfg]').forEach(b => b.addEventListener('click', () => {
       const on = b.getAttribute('aria-pressed') !== 'true';
       if (b.dataset.cfg === 'lights') { car.setLights(on); press('lights', on); }
@@ -82,48 +99,73 @@ async function setup3D() {
   }
 }
 
-// ---------------------------------------------------------------- catalogue
-const PRICE_STEPS = [300e6, 500e6, 750e6, 1e9, 1.5e9, 2e9, 3e9, 5e9];
+// ---------------------------------------------------------------- filters
+const F = { q: '', condition: '', available: false, pmin: 0, pmax: Infinity, brands: new Set(), year: 0, bodies: new Set(), transmission: '', fuels: new Set(), sort: 'featured' };
+let priceLo = 0, priceHi = 1;
+// price slider positions (0..100) follow a log scale so cheap and expensive cars both get room
+const posToPrice = p => Math.round(Math.exp(Math.log(priceLo) + (Math.log(priceHi) - Math.log(priceLo)) * p / 100) / 1e6) * 1e6;
+const priceToPos = v => 100 * (Math.log(v) - Math.log(priceLo)) / (Math.log(priceHi) - Math.log(priceLo));
+
 function setupFilters() {
   const f = $('#filters');
+  const prices = cars.map(c => c.price).filter(Boolean);
+  priceLo = Math.max(1e6, Math.min(...prices) * 0.95); priceHi = Math.max(...prices) * 1.05;
+  // histogram: 28 buckets on the same log scale as the slider
+  const N = 28, buckets = new Array(N).fill(0);
+  prices.forEach(p => { buckets[Math.min(N - 1, Math.floor(priceToPos(p) / 100 * N))]++; });
+  const top = Math.max(...buckets, 1);
+  $('#histogram').innerHTML = buckets.map((n, i) => `<i data-i="${i}" style="height:${n ? 18 + 82 * n / top : 6}%"></i>`).join('');
+
   const brands = [...new Set(cars.map(c => c.brand))].sort();
-  f.brand.insertAdjacentHTML('beforeend', brands.map(b => `<option>${esc(b)}</option>`).join(''));
-  f.max.max = PRICE_STEPS.length; f.max.value = PRICE_STEPS.length;
-  const priceLabel = () => { const i = Number(f.max.value); $('#price-out').textContent = i >= PRICE_STEPS.length ? 'Semua' : short(PRICE_STEPS[i]); };
-  priceLabel();
-  let t = 0;
-  f.addEventListener('input', e => {
-    if (e.target.name === 'max') priceLabel();
-    clearTimeout(t); t = setTimeout(read, e.target.name === 'q' ? 160 : 0);
-  });
+  $('#brand-checks').innerHTML = brands.map(b => `<label><input type="checkbox" name="brand" value="${esc(b)}"><span>${esc(b)}</span><small>${cars.filter(c => c.brand === b).length}</small></label>`).join('');
+  const years = [...new Set(cars.map(c => c.year))].sort((a, b) => b - a);
+  f.year.insertAdjacentHTML('beforeend', years.map(y => `<option value="${y}">${y} ke atas</option>`).join(''));
+
+  const read = () => {
+    const lo = Math.min(+f.pmin.value, +f.pmax.value), hi = Math.max(+f.pmin.value, +f.pmax.value);
+    Object.assign(F, {
+      condition: f.condition.value, available: f.available.checked, transmission: f.transmission.value, year: +f.year.value || 0,
+      pmin: lo <= 0 ? 0 : posToPrice(lo), pmax: hi >= 100 ? Infinity : posToPrice(hi),
+      brands: new Set($$('input[name=brand]:checked', f).map(i => i.value)),
+      bodies: new Set($$('input[name=body]:checked', f).map(i => i.value)),
+      fuels: new Set($$('input[name=fuel]:checked', f).map(i => i.value)),
+    });
+    $('#pmin-out').textContent = F.pmin ? short(F.pmin) : short(priceLo);
+    $('#pmax-out').textContent = F.pmax === Infinity ? short(priceHi) : short(F.pmax);
+    $$('#histogram i').forEach(b => { const p = (+b.dataset.i + 0.5) / N * 100; b.classList.toggle('on', p >= lo && p <= hi); });
+    shown = 12; renderCars();
+  };
+  f.addEventListener('input', read);
   f.addEventListener('change', read);
-  $('#body-chips').addEventListener('click', e => {
-    const c = e.target.closest('.chip'); if (!c) return;
-    $$('#body-chips .chip').forEach(x => x.classList.toggle('active', x === c));
-    filter.body = c.dataset.body; shown = 9; renderCars();
+  $('#reset-filters').addEventListener('click', () => { f.reset(); read(); });
+  let t = 0;
+  $('#q').addEventListener('input', e => {
+    clearTimeout(t);
+    t = setTimeout(() => { F.q = e.target.value.trim().toLowerCase(); shown = 12; if (VIEWS[view] !== 'view-catalog') location.hash = 'mobil'; else renderCars(); }, 150);
   });
-  $('#reset-filters').addEventListener('click', () => {
-    f.reset(); priceLabel();
-    $$('#body-chips .chip').forEach((x, i) => x.classList.toggle('active', i === 0));
-    Object.assign(filter, { q: '', brand: '', fuel: '', transmission: '', condition: '', body: '', max: Infinity, sort: 'featured' });
-    shown = 9; renderCars();
-  });
-  $('#load-more').addEventListener('click', () => { shown += 9; renderCars(); });
-  function read() {
-    Object.assign(filter, { q: f.q.value.trim().toLowerCase(), brand: f.brand.value, fuel: f.fuel.value, transmission: f.transmission.value, condition: f.condition.value, sort: f.sort.value });
-    const i = Number(f.max.value); filter.max = i >= PRICE_STEPS.length ? Infinity : PRICE_STEPS[i];
-    shown = 9; renderCars();
-  }
+  $('#sort').addEventListener('change', e => { F.sort = e.target.value; renderCars(); });
+  $('#load-more').addEventListener('click', () => { shown += 12; renderCars(); });
+  $$('[data-open-filters]').forEach(b => b.addEventListener('click', openFilters));
+  $$('[data-close-filters]').forEach(b => b.addEventListener('click', closeFilters));
+  read();
+}
+function openFilters() { $('#filters-panel').classList.add('open'); $('.scrim').hidden = false; $('#filters-panel').querySelector('input, button').focus(); }
+function closeFilters() { $('#filters-panel').classList.remove('open'); $('.scrim').hidden = true; }
+function activeFilterCount() {
+  return (F.condition ? 1 : 0) + (F.available ? 1 : 0) + (F.pmin || F.pmax !== Infinity ? 1 : 0) + F.brands.size + (F.year ? 1 : 0) + F.bodies.size + (F.transmission ? 1 : 0) + F.fuels.size;
 }
 
 function matches(c) {
-  if (filter.q && !`${nameOf(c)} ${c.color} ${c.body_type} ${c.year}`.toLowerCase().includes(filter.q)) return false;
-  if (filter.brand && c.brand !== filter.brand) return false;
-  if (filter.fuel && c.fuel !== filter.fuel) return false;
-  if (filter.transmission && c.transmission !== filter.transmission) return false;
-  if (filter.condition && c.condition !== filter.condition) return false;
-  if (filter.body && c.body_type !== filter.body) return false;
-  return Number(c.price) <= filter.max;
+  if (F.q && !`${nameOf(c)} ${c.color} ${c.body_type} ${c.year}`.toLowerCase().includes(F.q)) return false;
+  if (F.condition && c.condition !== F.condition) return false;
+  if (F.available && c.status && c.status !== 'tersedia') return false;
+  if (c.price < F.pmin || c.price > F.pmax) return false;
+  if (F.brands.size && !F.brands.has(c.brand)) return false;
+  if (F.year && c.year < F.year) return false;
+  if (F.bodies.size && !F.bodies.has(c.body_type)) return false;
+  if (F.transmission && c.transmission !== F.transmission) return false;
+  if (F.fuels.size && !F.fuels.has(c.fuel)) return false;
+  return true;
 }
 const SORT = {
   featured: (a, b) => (b.is_featured - a.is_featured) || (b.year - a.year),
@@ -133,105 +175,192 @@ const SORT = {
   km_asc: (a, b) => a.mileage_km - b.mileage_km,
 };
 
-function card(c) {
-  const sold = c.status && c.status !== 'tersedia';
-  return `<article class="car-card" data-id="${c.id}">
-    <button type="button" class="car-media" data-detail="${c.id}" aria-label="Lihat detail ${esc(nameOf(c))}">
-      <span class="badges">${c.condition === 'baru' ? '<span class="badge new">Baru</span>' : '<span class="badge">Bekas</span>'}${Number(c.is_featured) ? '<span class="badge hot">Unggulan</span>' : ''}${sold ? `<span class="badge sold">${esc(c.status === 'dipesan' ? 'Dipesan' : 'Terjual')}</span>` : ''}</span>
+// ---------------------------------------------------------------- cards
+function card(c, i = 0) {
+  const fav = favs.has(String(c.id));
+  const cond = c.status && c.status !== 'tersedia' ? `<span class="tag sold">${c.status === 'dipesan' ? 'Dipesan' : 'Terjual'}</span>`
+    : c.condition === 'baru' ? '<span class="tag">Baru</span>' : Number(c.is_featured) ? '<span class="tag hot">Unggulan</span>' : '<span class="tag used">Bekas</span>';
+  return `<article class="car-card${String(c.id) === String(selectedId) && $('#catalog-body')?.classList.contains('with-map') ? ' selected' : ''}" data-id="${c.id}" style="--i:${Math.min(i, 11)}">
+    <div class="card-meta"><span>${cond} · ${c.year} · ${Number(c.mileage_km).toLocaleString('id-ID')} km</span>
+      <button type="button" class="fav" data-fav="${c.id}" aria-pressed="${fav}" aria-label="${fav ? 'Hapus dari' : 'Simpan ke'} favorit: ${esc(nameOf(c))}"><svg><use href="#i-heart${fav ? '-fill' : ''}"/></svg></button></div>
+    <button type="button" class="card-media" data-detail="${c.id}" aria-label="Lihat detail ${esc(nameOf(c))}">
       <img src="${esc(c.image)}" alt="${esc(nameOf(c))} warna ${esc(c.color)}" loading="lazy" width="900" height="500">
     </button>
-    <div class="car-info">
-      <div class="car-title"><small>${esc(c.brand)} · ${c.year}</small><h3>${esc(c.model)} ${esc(c.variant || '')}</h3></div>
-      <ul class="specs">
-        <li><svg><use href="#i-gauge"/></svg>${Number(c.mileage_km) ? Number(c.mileage_km).toLocaleString('id-ID') + ' km' : '0 km'}</li>
-        <li><svg><use href="#i-gear"/></svg>${LABEL.trans[c.transmission] || esc(c.transmission)}</li>
-        <li><svg><use href="#i-fuel"/></svg>${LABEL.fuel[c.fuel] || esc(c.fuel)}</li>
-        <li><svg><use href="#i-seat"/></svg>${c.seats} kursi</li>
-      </ul>
-      <div class="car-foot">
-        <div class="price">${rupiah(c.price)}<small>Cicilan ±${short(monthly(Number(c.price), 30, 36, 5.5).monthly)}/bln</small></div>
-        <button type="button" class="btn btn-ghost btn-sm" data-detail="${c.id}">Detail</button>
-      </div>
+    <div class="card-info">
+      <div><h3>${esc(nameOf(c))}</h3><p>${esc(specOf(c))}</p></div>
+      <div class="price">${short(c.price)}<small>±${short(monthly(c.price, 30, 36, 5.5).monthly)}/bln</small></div>
     </div>
   </article>`;
 }
 
-function renderCars() {
-  const list = cars.filter(matches).sort(SORT[filter.sort] || SORT.featured);
-  const grid = $('#car-grid');
-  grid.innerHTML = list.length ? list.slice(0, shown).map(card).join('') : `<div class="empty">Belum ada mobil yang cocok dengan filter ini.<br><button type="button" class="link-btn" onclick="document.getElementById('reset-filters').click()">Reset filter</button> atau <a href="${waLink('Halo BuyCars, saya cari mobil yang belum ada di katalog.')}" target="_blank" rel="noopener">tanya stok lewat WhatsApp</a>.</div>`;
-  const active = filter.q || filter.brand || filter.fuel || filter.transmission || filter.condition || filter.body || filter.max !== Infinity || filter.sort !== 'featured';
-  $('#result-count').textContent = `${list.length} mobil ditemukan`;
-  $('#reset-filters').hidden = !active;
-  $('#load-more').hidden = list.length <= shown;
-  setupTilt();
+function listForView() {
+  if (view === 'favorit') return cars.filter(c => favs.has(String(c.id)));
+  if (view === 'terakhir') return recent.map(id => cars.find(c => String(c.id) === id)).filter(Boolean);
+  return cars;
 }
 
-function setupTilt() {
-  if (matchMedia('(hover: none), (prefers-reduced-motion: reduce)').matches) return;
-  $$('.car-card').forEach(el => {
-    if (el.dataset.tilt) return; el.dataset.tilt = 1;
-    el.addEventListener('pointermove', e => {
-      const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
-      el.style.setProperty('--ry', `${x * 10}deg`); el.style.setProperty('--rx', `${-y * 8}deg`);
-    });
-    el.addEventListener('pointerleave', () => { el.style.removeProperty('--ry'); el.style.removeProperty('--rx'); });
+function renderCars() {
+  const base = listForView();
+  let list = base.filter(matches);
+  if (view !== 'terakhir') list = list.sort(SORT[F.sort] || SORT.featured);
+  const grid = $('#car-grid');
+  const label = { mobil: 'mobil tersedia', favorit: 'mobil favorit', terakhir: 'terakhir dilihat' }[view];
+  $('#result-count').textContent = list.length;
+  $('#catalog-label').textContent = label;
+  $('#apply-count').textContent = list.length;
+  const n = activeFilterCount();
+  $('#filter-count').hidden = !n; $('#filter-count').textContent = n;
+  if (!list.length) {
+    grid.innerHTML = view === 'favorit' && !base.length ? '<div class="empty">Belum ada favorit. Ketuk ikon hati di kartu mobil untuk menyimpannya di sini.</div>'
+      : view === 'terakhir' && !base.length ? '<div class="empty">Mobil yang kamu buka detailnya akan muncul di sini.</div>'
+      : `<div class="empty">Belum ada mobil yang cocok dengan filter ini.<br><button type="button" class="link-btn" onclick="document.getElementById('reset-filters').click()">Reset filter</button> atau <a href="${waLink('Halo BuyCars, saya cari mobil yang belum ada di katalog.')}" target="_blank" rel="noopener">tanya stok lewat WhatsApp</a>.</div>`;
+  } else grid.innerHTML = list.slice(0, shown).map(card).join('');
+  $('#load-more').hidden = list.length <= shown;
+  if (!list.some(c => String(c.id) === String(selectedId))) selectedId = list[0]?.id ?? null;
+  renderMapCard();
+}
+
+// ---------------------------------------------------------------- map view
+function setupMap() {
+  const btn = $('#map-toggle'), body = $('.catalog-body'), panel = $('#map-panel');
+  body.id = 'catalog-body';
+  btn.addEventListener('click', () => {
+    const on = btn.getAttribute('aria-pressed') !== 'true';
+    btn.setAttribute('aria-pressed', String(on));
+    $('span', btn).textContent = on ? 'Sembunyikan peta' : 'Tampilkan peta';
+    body.classList.toggle('with-map', on);
+    panel.hidden = !on;
+    if (on && !$('#map-catalog').src) $('#map-catalog').src = mapSrc();
+    renderCars();
   });
 }
+function renderMapCard() {
+  const box = $('#map-card');
+  const c = cars.find(x => String(x.id) === String(selectedId));
+  if (!box || !c) { if (box) box.innerHTML = ''; return; }
+  box.innerHTML = `<img src="${esc(c.image)}" alt="">
+    <div><h3>${esc(nameOf(c))}</h3><p>${esc(specOf(c))}</p></div>
+    <p>Bisa dilihat di showroom ${esc(CFG.city)}</p>
+    <button type="button" class="btn btn-primary btn-sm" data-book="${c.id}">Booking <span>${short(c.price)}</span></button>`;
+}
 
-// ---------------------------------------------------------------- detail modal
-function openDetail(id) {
+// ---------------------------------------------------------------- favourites + recents
+function toggleFav(id) {
+  id = String(id);
+  favs.has(id) ? favs.delete(id) : favs.add(id);
+  store.set('buycars-fav', [...favs]);
+  const on = favs.has(id);
+  $$(`[data-fav="${id}"]`).forEach(b => { b.setAttribute('aria-pressed', String(on)); $('use', b).setAttribute('href', on ? '#i-heart-fill' : '#i-heart'); });
+  updateFavCount();
+  toast(on ? 'Disimpan ke favorit' : 'Dihapus dari favorit');
+  if (view === 'favorit') renderCars();
+}
+function updateFavCount() { const n = favs.size; $('#fav-count').hidden = !n; $('#fav-count').textContent = n; }
+function remember(id) {
+  id = String(id);
+  recent = [id, ...recent.filter(x => x !== id)].slice(0, 8);
+  store.set('buycars-recent', recent);
+}
+
+// ---------------------------------------------------------------- detail drawer
+function openDetail(id, push = true) {
   const c = cars.find(x => String(x.id) === String(id));
   if (!c) return;
-  const m = monthly(Number(c.price), 30, 36, 5.5);
-  $('#modal-body').innerHTML = `
-    <div class="modal-media"><span class="badges">${c.condition === 'baru' ? '<span class="badge new">Baru</span>' : '<span class="badge">Bekas</span>'}</span><img src="${esc(c.image)}" alt="${esc(nameOf(c))}"></div>
-    <div class="modal-info">
-      <div><p class="eyebrow">${esc(c.brand)} · ${c.year}</p><h2 id="modal-title">${esc(c.model)} ${esc(c.variant || '')}</h2></div>
-      <div class="price">${rupiah(c.price)}</div>
-      <p class="est">Contoh cicilan: <b>${rupiah(m.monthly)}/bulan</b> (DP 30%, 3 tahun, bunga flat 5,5%).</p>
-      <p class="muted">${esc(c.description || '')}</p>
-      <dl class="spec-table">
-        <div><dt>Tahun</dt><dd>${c.year}</dd></div>
-        <div><dt>Kilometer</dt><dd>${Number(c.mileage_km).toLocaleString('id-ID')} km</dd></div>
-        <div><dt>Mesin</dt><dd>${esc(c.engine || '–')}</dd></div>
-        <div><dt>Tenaga</dt><dd>${c.power_hp ? c.power_hp + ' hp' : '–'}</dd></div>
-        <div><dt>Transmisi</dt><dd>${LABEL.trans[c.transmission] || esc(c.transmission)}</dd></div>
-        <div><dt>Bahan bakar</dt><dd>${LABEL.fuel[c.fuel] || esc(c.fuel)}</dd></div>
-        <div><dt>Tipe</dt><dd>${LABEL.body[c.body_type] || esc(c.body_type)}</dd></div>
-        <div><dt>Warna</dt><dd>${esc(c.color)}</dd></div>
-      </dl>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-primary" data-book="${c.id}"><svg><use href="#i-cal"/></svg> Booking test drive</button>
-        <button type="button" class="btn btn-ghost" data-credit="${c.id}"><svg><use href="#i-card"/></svg> Hitung kredit</button>
-        <a class="btn btn-ghost" target="_blank" rel="noopener" href="${waLink(`Halo BuyCars, saya tertarik dengan ${nameOf(c)} ${c.year} (${rupiah(c.price)}). Apakah masih tersedia?`)}"><svg><use href="#i-wa"/></svg> Tanya</a>
+  selectedId = c.id;
+  remember(c.id);
+  const fav = favs.has(String(c.id));
+  const plans = [
+    { k: 'cash', label: 'Tunai', value: short(c.price), note: 'harga di showroom' },
+    { k: '36', label: 'Kredit 3 th', value: short(monthly(c.price, 30, 36, 5.5).monthly), note: 'per bulan · DP 30%', tag: '' },
+    { k: '60', label: 'Kredit 5 th', value: short(monthly(c.price, 30, 60, 5.5).monthly), note: 'per bulan · DP 30%' },
+  ];
+  $('#drawer-body').innerHTML = `
+    <div class="drawer-scroll">
+      <div class="drawer-top">
+        <button type="button" class="icon-btn" data-close aria-label="Tutup"><svg><use href="#i-x"/></svg></button>
+        <button type="button" class="fav" data-fav="${c.id}" aria-pressed="${fav}" aria-label="${fav ? 'Hapus dari' : 'Simpan ke'} favorit"><svg><use href="#i-heart${fav ? '-fill' : ''}"/></svg></button>
       </div>
+      <div class="drawer-media"><img src="${esc(c.image)}" alt="${esc(nameOf(c))} warna ${esc(c.color)}"></div>
+      <div class="drawer-title">
+        <div><h2 id="drawer-title">${esc(nameOf(c))}</h2><p>${c.year} · ${esc(specOf(c))}</p></div>
+        <div class="price">${short(c.price)}<small>${rupiah(c.price)}</small></div>
+      </div>
+      <div class="d-tabs" role="tablist">
+        <button type="button" role="tab" class="d-tab" aria-selected="true" data-pane="info">Info</button>
+        <button type="button" role="tab" class="d-tab" aria-selected="false" data-pane="spec">Spesifikasi</button>
+        <button type="button" role="tab" class="d-tab" aria-selected="false" data-pane="credit">Kredit</button>
+        <button type="button" role="tab" class="d-tab" aria-selected="false" data-pane="loc">Lokasi</button>
+      </div>
+      <div class="d-pane" data-pane="info" role="tabpanel">
+        <p>${esc(c.description || 'Hubungi kami untuk detail lengkap mobil ini.')}</p>
+        <div class="tiles">${plans.map((p, i) => `<div class="tile${i === 1 ? ' on' : ''}"><span>${p.label}</span><b>${p.value}</b><small>${p.note}</small></div>`).join('')}</div>
+        <p class="note">Contoh cicilan dengan bunga flat 5,5% per tahun. Angka final mengikuti leasing.</p>
+      </div>
+      <div class="d-pane" data-pane="spec" role="tabpanel" hidden>
+        <dl class="spec-table">
+          <div><dt>Tahun</dt><dd>${c.year}</dd></div>
+          <div><dt>Kilometer</dt><dd>${Number(c.mileage_km).toLocaleString('id-ID')} km</dd></div>
+          <div><dt>Kondisi</dt><dd>${c.condition === 'baru' ? 'Baru' : 'Bekas'}</dd></div>
+          <div><dt>Tipe</dt><dd>${LABEL.body[c.body_type] || esc(c.body_type)}</dd></div>
+          <div><dt>Mesin</dt><dd>${esc(c.engine || '–')}</dd></div>
+          <div><dt>Tenaga</dt><dd>${c.power_hp ? c.power_hp + ' hp' : '–'}</dd></div>
+          <div><dt>Transmisi</dt><dd>${LABEL.trans[c.transmission] || esc(c.transmission)}</dd></div>
+          <div><dt>Bahan bakar</dt><dd>${LABEL.fuel[c.fuel] || esc(c.fuel)}</dd></div>
+          <div><dt>Kursi</dt><dd>${c.seats}</dd></div>
+          <div><dt>Warna</dt><dd>${esc(c.color)}</dd></div>
+        </dl>
+      </div>
+      <div class="d-pane" data-pane="credit" role="tabpanel" hidden>
+        <div class="tiles">${[24, 36, 60].map(m => { const r = monthly(c.price, 30, m, 5.5); return `<div class="tile"><span>${m / 12} tahun</span><b>${short(r.monthly)}</b><small>per bulan</small></div>`; }).join('')}</div>
+        <div class="calc-row"><span>Uang muka 30%</span><b>${rupiah(c.price * 0.3)}</b></div>
+        <button type="button" class="btn btn-ghost" data-credit="${c.id}"><svg><use href="#i-card"/></svg> Atur DP dan tenor sendiri</button>
+      </div>
+      <div class="d-pane" data-pane="loc" role="tabpanel" hidden>
+        <div class="d-map"><iframe class="map" title="Lokasi showroom" loading="lazy" data-src="${esc(mapSrc())}"></iframe></div>
+        <p>Mobil ini ada di showroom ${esc(CFG.city)}. Jam buka ${esc(CFG.hours)}.</p>
+      </div>
+    </div>
+    <div class="drawer-bar">
+      <button type="button" class="btn btn-primary" data-book="${c.id}"><span>Booking test drive</span><span>Gratis</span></button>
+      <a class="icon-btn" target="_blank" rel="noopener" aria-label="Tanya lewat WhatsApp" href="${waLink(`Halo BuyCars, saya tertarik dengan ${nameOf(c)} ${c.year} (${rupiah(c.price)}). Apakah masih tersedia?`)}"><svg><use href="#i-wa"/></svg></a>
     </div>`;
-  const d = $('#car-modal');
-  d.showModal();
+  const d = $('#car-drawer');
+  if (!d.open) d.showModal();
+  $('.drawer-scroll', d).scrollTop = 0;
+  if (push && VIEWS[view] === 'view-catalog') history.replaceState(null, '', `#${view}/${c.slug || c.id}`);
+  if (VIEWS[view] === 'view-catalog') renderMapCard();
+}
+function setupDrawer() {
+  const d = $('#car-drawer');
+  d.addEventListener('click', e => {
+    if (e.target === d || e.target.closest('[data-close]')) d.close();
+    const tab = e.target.closest('.d-tab');
+    if (tab) {
+      $$('.d-tab', d).forEach(t => t.setAttribute('aria-selected', String(t === tab)));
+      $$('.d-pane', d).forEach(p => { p.hidden = p.dataset.pane !== tab.dataset.pane; });
+      const fr = $(`.d-pane[data-pane="${tab.dataset.pane}"] iframe[data-src]`, d);
+      if (fr && !fr.src) fr.src = fr.dataset.src;
+    }
+  });
+  d.addEventListener('close', () => { if (location.hash.includes('/')) history.replaceState(null, '', `#${view}`); });
 }
 
 function bookCar(id) {
-  $('#car-modal').close();
+  if ($('#car-drawer').open) $('#car-drawer').close();
+  location.hash = 'kontak';
   showTab('drive');
   const f = $('#booking-form');
   f.car_id.value = id;
-  $('#kontak').scrollIntoView({ behavior: 'smooth' });
-  setTimeout(() => f.name.focus({ preventScroll: true }), 600);
+  setTimeout(() => f.name.focus(), 80);
 }
 function creditCar(id) {
-  $('#car-modal').close();
+  if ($('#car-drawer').open) $('#car-drawer').close();
+  location.hash = 'kredit';
   const f = $('#calc');
   f.car.value = id; f.car.dispatchEvent(new Event('change', { bubbles: true }));
-  $('#kredit').scrollIntoView({ behavior: 'smooth' });
 }
 
 // ---------------------------------------------------------------- credit calculator
-function monthly(price, dpPct, months, ratePct) {
-  const dp = price * dpPct / 100, loan = price - dp;
-  const interest = loan * (ratePct / 100) * (months / 12);
-  return { dp, loan, interest, monthly: (loan + interest) / months };
-}
 const digits = s => Number(String(s).replace(/[^\d]/g, '')) || 0;
 function setupCalc() {
   const f = $('#calc');
@@ -239,7 +368,7 @@ function setupCalc() {
   const calc = () => {
     const price = digits(f.price.value), dp = Number(f.dp.value), months = Number(f.tenor.value), rate = Math.max(0, Number(f.rate.value) || 0);
     $('#dp-out').textContent = dp + '%';
-    if (!price) { ['monthly', 'dp', 'loan', 'interest'].forEach(k => { $('#out-' + k).textContent = '–'; }); return; }
+    if (!price) { ['monthly', 'dp', 'loan', 'interest'].forEach(k => { $('#out-' + k).textContent = '–'; }); return null; }
     const r = monthly(price, dp, months, rate);
     $('#out-monthly').textContent = rupiah(r.monthly);
     $('#out-dp').textContent = rupiah(r.dp);
@@ -253,7 +382,7 @@ function setupCalc() {
   });
   f.car.addEventListener('change', () => {
     const c = cars.find(x => String(x.id) === f.car.value);
-    if (c) f.price.value = Number(c.price).toLocaleString('id-ID');
+    if (c) f.price.value = c.price.toLocaleString('id-ID');
     calc();
   });
   $('#calc-wa').addEventListener('click', () => {
@@ -295,7 +424,6 @@ function setupForms() {
   $('#tab-msg').addEventListener('click', () => showTab('msg'));
   $$('[data-testdrive]').forEach(a => a.addEventListener('click', () => showTab('drive')));
 
-  // booking: tomorrow to 60 days ahead, no Sundays
   const bf = $('#booking-form');
   const day = d => d.toISOString().slice(0, 10);
   const t = new Date(); t.setDate(t.getDate() + 1);
@@ -374,7 +502,9 @@ function setupForms() {
 }
 
 // ---------------------------------------------------------------- reviews
+let reviewsLoaded = false;
 async function loadReviews() {
+  if (reviewsLoaded) return; reviewsLoaded = true;
   const box = $('#reviews');
   let list = [];
   try { list = await api.reviews(); } catch { /* keep empty */ }
@@ -388,51 +518,59 @@ async function loadReviews() {
     <p>${esc(r.comment)}</p></article>`).join('');
 }
 
-// ---------------------------------------------------------------- hero stats, brands, gallery, dialogs
-function heroStats() {
+// ---------------------------------------------------------------- home stats + featured
+function homeExtras() {
   const avail = cars.filter(c => !c.status || c.status === 'tersedia');
   $('[data-stat="count"]').textContent = avail.length;
   $('[data-stat="brands"]').textContent = new Set(cars.map(c => c.brand)).size;
-  $('[data-stat="from"]').textContent = avail.length ? short(Math.min(...avail.map(c => Number(c.price)))) : '–';
-  const brands = [...new Set(cars.map(c => c.brand))];
-  const row = brands.map(b => `<span>${esc(b)}</span>`).join('');
-  $('#brand-track').innerHTML = row + row + row + row;
+  $('[data-stat="from"]').textContent = avail.length ? short(Math.min(...avail.map(c => c.price))) : '–';
+  const feat = cars.filter(c => c.is_featured).slice(0, 4);
+  $('#featured-row').innerHTML = (feat.length ? feat : cars.slice(0, 4)).map(card).join('');
 }
-function setupDialogs() {
+
+// ---------------------------------------------------------------- clicks
+function setupClicks() {
   document.addEventListener('click', e => {
-    const d = e.target.closest('[data-detail]'); if (d) openDetail(d.dataset.detail);
+    const f = e.target.closest('[data-fav]'); if (f) { toggleFav(f.dataset.fav); return; }
+    const d = e.target.closest('[data-detail]');
+    if (d) {
+      // in map view the first click selects the car on the map, the second opens it
+      if ($('#catalog-body').classList.contains('with-map') && String(selectedId) !== d.dataset.detail && d.closest('#car-grid')) {
+        selectedId = d.dataset.detail;
+        $$('#car-grid .car-card').forEach(c => c.classList.toggle('selected', c.dataset.id === selectedId));
+        renderMapCard();
+        return;
+      }
+      openDetail(d.dataset.detail);
+    }
     const b = e.target.closest('[data-book]'); if (b) bookCar(b.dataset.book);
     const c = e.target.closest('[data-credit]'); if (c) creditCar(c.dataset.credit);
-    if (e.target.closest('[data-close]')) e.target.closest('dialog').close();
   });
-  $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
-  const lb = $('#lightbox');
-  $('#gallery').addEventListener('click', e => {
-    const g = e.target.closest('.g-item'); if (!g) return;
-    const img = $('img', g);
-    $('img', lb).src = img.src; $('img', lb).alt = img.alt;
-    lb.showModal();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFilters(); });
 }
 
 // ---------------------------------------------------------------- boot
 async function boot() {
   applyConfig();
-  setupNav();
-  setupDialogs();
-  setup3D();
+  setupClicks();
+  setupDrawer();
+  setupMap();
+  updateFavCount();
+  $('#map').src = mapSrc();
   await api.connect();
   const badge = $('#mode-badge');
-  badge.textContent = api.online() ? 'Terhubung ke server' : 'Mode tanpa server';
+  badge.textContent = api.online() ? 'Server aktif' : 'Mode demo';
   badge.title = api.online() ? 'Katalog dan form memakai database.' : 'Katalog memakai data bawaan; form dikirim lewat WhatsApp.';
   badge.classList.toggle('live', api.online());
+  $('#admin-link').hidden = !api.online();
   try { cars = await api.cars(); } catch { cars = []; }
   cars.forEach(c => { c.price = Number(c.price); c.year = Number(c.year); c.mileage_km = Number(c.mileage_km); c.is_featured = Number(c.is_featured); c.seats = Number(c.seats); });
-  heroStats();
   setupFilters();
-  renderCars();
   setupCalc();
   setupForms();
-  loadReviews();
+  homeExtras();
+  addEventListener('hashchange', route);
+  view = null;
+  route();
 }
 boot();

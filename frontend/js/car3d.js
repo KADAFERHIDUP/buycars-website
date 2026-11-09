@@ -238,7 +238,7 @@ export function initCar3D(host, { color = '#c8102e', onReady, shift } = {}) {
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   scene.add(floor);
-  const turntable = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.35, 0.06, 96), new THREE.MeshStandardMaterial({ color: 0x0f1118, metalness: 0.45, roughness: 0.4, envMapIntensity: 0.35 }));
+  const turntable = new THREE.Mesh(new THREE.CylinderGeometry(3.3, 3.35, 0.06, 96), new THREE.MeshStandardMaterial({ color: 0x0f1118, metalness: 0.2, roughness: 0.62, envMapIntensity: 0.18 }));
   turntable.position.y = 0.03;
   turntable.receiveShadow = true;
   scene.add(turntable);
