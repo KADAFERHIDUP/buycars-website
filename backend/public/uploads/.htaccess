@@ -1,0 +1,11 @@
+# Folder ini hanya berisi foto yang diupload admin.
+# Skrip apa pun di sini tidak boleh dijalankan, walaupun ada yang berhasil menyelundupkannya.
+<FilesMatch "\.(?i:php\d*|phtml|phar|pht|cgi|pl|py|sh|htaccess)$">
+    Require all denied
+</FilesMatch>
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
