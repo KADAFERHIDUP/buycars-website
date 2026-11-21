@@ -19,7 +19,7 @@ class Subscribers extends BaseController
         $out  = fopen('php://temp', 'w+');
         fputcsv($out, ['email', 'terdaftar'], ',', '"', '');
         foreach ($rows as $r) {
-            fputcsv($out, [$r['email'], $r['created_at']], ',', '"', '');
+            fputcsv($out, csv_safe([$r['email'], $r['created_at']]), ',', '"', '');
         }
         rewind($out);
         $csv = stream_get_contents($out);
